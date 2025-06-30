@@ -1,9 +1,9 @@
-# FRC 6941 IronPulse & 10541 CarbonPulse 2025 Competition Robot
+# FRC 6941 IronPulse 2025 Offseason Robot
 
 ## Troubleshooting
 
 - If Stream Deck doesn't work properly
-    - the profile of stream deck is in **profiles/FRC10541.streamDeckProfile**
+    - the profile of stream deck is in **profiles/FRC6941.streamDeckProfile**
     - see https://github.com/ashupp/Streamdeck-vJoy
 - If simulation failed with **MSVC error**, set the project JDK to wpilib2025 and add simulate to gradle run/debug
   config in IDEA, see https://www.chiefdelphi.com/t/error-when-running-simulation-wpilib-2025-2-1/481435
