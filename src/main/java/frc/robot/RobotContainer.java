@@ -4,27 +4,20 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.controller.ProfiledPIDController;
-import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandGenericHID;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.aimSequences.AimGoalSupplier;
-import frc.robot.commands.aimSequences.ReefAimCommand;
 import frc.robot.commands.aimSequences.SuperCycleCommand;
-import frc.robot.commands.climb.ClimbCommand;
-import frc.robot.commands.climb.IdleClimbCommand;
-import frc.robot.commands.climb.PreClimbCommand;
 import frc.robot.display.Display;
 import frc.robot.subsystems.beambreak.BeambreakIO;
 import frc.robot.subsystems.beambreak.BeambreakIOReal;
@@ -40,32 +33,34 @@ import frc.robot.subsystems.indicator.IndicatorSubsystem;
 import frc.robot.subsystems.limelight.LimelightIOReal;
 import frc.robot.subsystems.limelight.LimelightIOReplay;
 import frc.robot.subsystems.limelight.LimelightSubsystem;
+import frc.robot.subsystems.questnav.QuestNavIO;
+import frc.robot.subsystems.questnav.QuestNavIOReal;
+import frc.robot.subsystems.questnav.QuestNavIOSim;
+import frc.robot.subsystems.questnav.QuestNavSubsystem;
+import frc.robot.subsystems.roller.RollerIO;
+import frc.robot.subsystems.roller.RollerIOReal;
+import frc.robot.subsystems.roller.RollerIOSim;
 import frc.robot.subsystems.superstructure.DestinationSupplier;
 import frc.robot.subsystems.superstructure.Superstructure;
 import frc.robot.subsystems.superstructure.SuperstructureState;
-import frc.robot.subsystems.superstructure.DestinationSupplier.GamePiece;
 import frc.robot.subsystems.superstructure.elevator.ElevatorIO;
 import frc.robot.subsystems.superstructure.elevator.ElevatorIOReal;
 import frc.robot.subsystems.superstructure.elevator.ElevatorIOSim;
 import frc.robot.subsystems.superstructure.elevator.ElevatorSubsystem;
-import frc.robot.subsystems.superstructure.endeffectorarm.*;
-import frc.robot.subsystems.superstructure.intake.*;
-import frc.robot.subsystems.questnav.QuestNavIOReal;
-import frc.robot.subsystems.questnav.QuestNavIOSim;
-import frc.robot.subsystems.questnav.QuestNavSubsystem;
+import frc.robot.subsystems.superstructure.endeffectorarm.EndEffectorArmPivotIO;
+import frc.robot.subsystems.superstructure.endeffectorarm.EndEffectorArmPivotIOReal;
+import frc.robot.subsystems.superstructure.endeffectorarm.EndEffectorArmPivotIOSim;
+import frc.robot.subsystems.superstructure.endeffectorarm.EndEffectorArmSubsystem;
+import frc.robot.subsystems.superstructure.intake.IntakePivotIO;
+import frc.robot.subsystems.superstructure.intake.IntakePivotIOReal;
+import frc.robot.subsystems.superstructure.intake.IntakePivotIOSim;
+import frc.robot.subsystems.superstructure.intake.IntakeSubsystem;
 import frc.robot.subsystems.swerve.Swerve;
-import frc.robot.subsystems.roller.RollerIO;
-import frc.robot.subsystems.roller.RollerIOReal;
-import frc.robot.subsystems.roller.RollerIOSim;
 import lombok.Getter;
 import org.frcteam6941.looper.UpdateManager;
 import org.littletonrobotics.AllianceFlipUtil;
-import org.littletonrobotics.junction.Logger;
-import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
-import frc.robot.subsystems.questnav.QuestNavIO;
 
 import java.util.HashMap;
-import java.util.Set;
 
 import static frc.robot.RobotConstants.LimelightConstants.LIMELIGHT_LEFT;
 import static frc.robot.RobotConstants.LimelightConstants.LIMELIGHT_RIGHT;
@@ -121,12 +116,12 @@ public class RobotContainer {
                                 RobotConstants.IntakeConstants.IS_BRAKE
                         ),
                         new RollerIOReal(
-                            RobotConstants.IntakeConstants.INDEX_MOTOR_ID,
-                            RobotConstants.CANIVORE_CAN_BUS_NAME,
-                            RobotConstants.IntakeConstants.STATOR_CURRENT_LIMIT_AMPS,
-                            RobotConstants.IntakeConstants.SUPPLY_CURRENT_LIMIT_AMPS,
-                            RobotConstants.IntakeConstants.IS_INVERT,
-                            RobotConstants.IntakeConstants.IS_BRAKE
+                                RobotConstants.IntakeConstants.INDEX_MOTOR_ID,
+                                RobotConstants.CANIVORE_CAN_BUS_NAME,
+                                RobotConstants.IntakeConstants.STATOR_CURRENT_LIMIT_AMPS,
+                                RobotConstants.IntakeConstants.SUPPLY_CURRENT_LIMIT_AMPS,
+                                RobotConstants.IntakeConstants.IS_INVERT,
+                                RobotConstants.IntakeConstants.IS_BRAKE
                         ),
                         new BeambreakIOReal(RobotConstants.BeamBreakConstants.INTAKE_BEAMBREAK_ID)
                 );
@@ -257,7 +252,6 @@ public class RobotContainer {
     // }
 
 
-
     private void configureDriverBindings() {
         //TODO: consider enabling the auto scoring button whilst the superstructure is intaking
         swerve.setDefaultCommand(Commands.runOnce(() -> swerve.drive(
@@ -376,9 +370,8 @@ public class RobotContainer {
         //TODO: Delete this as soon as we have intake
         driverController.back().whileTrue(
                 superstructure.runGoal(SuperstructureState.CORAL_STATION_INTAKE)
-         );        
+        );
     }
-
 
 
     private void configureStreamDeckBindings() {
@@ -387,7 +380,7 @@ public class RobotContainer {
                 .onTrue(
                         Commands.runOnce(
                                 () -> questNavSubsystem.resetPose(
-                                        swerve.getLocalizer().getCoarseFieldPose(Timer.getFPGATimestamp()), 
+                                        swerve.getLocalizer().getCoarseFieldPose(Timer.getFPGATimestamp()),
                                         true
                                 )
                         )
@@ -425,7 +418,7 @@ public class RobotContainer {
                                                 .until(() -> !superstructure.hasAlgae())
                                 )
                 );
-                
+
         testerController.a()
                 .whileTrue(
                         superstructure
@@ -452,12 +445,11 @@ public class RobotContainer {
         limelightSubsystem.setMegaTag2(setMegaTag2);
     }
 
-        /**
+    /**
      * Helper method to create a scoring command sequence for a given branch and state
+     *
      * @param isRightBranch true for right branch, false for left branch
-     * @param state the superstructure state to target
-     * 
-     * 
+     * @param state         the superstructure state to target
      * @return the command sequence for scoring
      */
     private Command createScoringCommand(boolean isRightBranch, SuperstructureState state) {
@@ -472,6 +464,7 @@ public class RobotContainer {
 
     /**
      * Helper method to check if robot is in the hexagonal reef danger zone
+     *
      * @return true if robot is in danger zone
      */
     private boolean isInReefDangerZone() {
@@ -481,14 +474,15 @@ public class RobotContainer {
 
     /**
      * Determines the appropriate intake state based on current conditions
+     *
      * @return SuperstructureState for intake operation
      */
     private SuperstructureState determineIntakeState() {
         boolean hasAlgae = superstructure.hasAlgae();
         boolean inDangerZone = isInReefDangerZone();
-        
+
         System.out.println("Intake State Decision - HasAlgae: " + hasAlgae + ", InDangerZone: " + inDangerZone);
-        
+
         // If we have algae OR we're in danger zone, use indexed intake
         // Otherwise, use ground intake for safety
         if (hasAlgae || inDangerZone) {
@@ -500,12 +494,13 @@ public class RobotContainer {
 
     /**
      * Determines if the intake operation is complete based on current conditions
+     *
      * @return true if intake is complete
      */
     private boolean isIntakeComplete() {
         boolean hasAlgae = superstructure.hasAlgae();
         boolean inDangerZone = isInReefDangerZone();
-        
+
         if (hasAlgae) {
             // When we have algae, we need both algae AND indexed coral
             return superstructure.hasAlgae() && superstructure.indexedCoral();
@@ -521,6 +516,7 @@ public class RobotContainer {
     /**
      * Creates a command to move the superstructure to algae prestate until robot exits danger zone
      * This is used after SuperCycleCommand completes to ensure safe exit from reef area
+     *
      * @return Command that continues to algae prestate until out of danger zone
      */
     private Command createDangerZoneExitCommand() {
@@ -530,10 +526,9 @@ public class RobotContainer {
                 // Continue running to algae prestate until out of danger zone
                 superstructure
                         .runGoal(() -> destinationSupplier.getPreState())
-                        .until(() ->!isInReefDangerZone())
+                        .until(() -> !isInReefDangerZone())
         ).onlyIf(this::isInReefDangerZone); // Only run if actually in danger zone
     }
-
 
 
 }
