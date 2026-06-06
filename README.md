@@ -1,4 +1,6 @@
 # FRC 6941 IronPulse & 10541 CarbonPulse 2025 Competition Robot
+-年级：9升10
+-姓名：冯子涵
 
 ## Troubleshooting
 
