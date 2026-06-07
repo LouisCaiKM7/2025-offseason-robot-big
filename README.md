@@ -1,5 +1,9 @@
 # FRC 6941 IronPulse & 10541 CarbonPulse 2025 Competition Robot
 
+- 年级：8.4
+- 姓名：王启霖
+
+
 ## Troubleshooting
 
 - If Stream Deck doesn't work properly
