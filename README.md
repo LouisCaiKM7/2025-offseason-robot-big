@@ -1,5 +1,8 @@
 # FRC 6941 IronPulse & 10541 CarbonPulse 2025 Competition Robot
 
+班级：9.1
+姓名：张拭嘉
+
 ## Troubleshooting
 
 - If Stream Deck doesn't work properly
